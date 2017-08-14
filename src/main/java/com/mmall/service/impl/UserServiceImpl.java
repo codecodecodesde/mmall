@@ -169,4 +169,13 @@ public class UserServiceImpl implements IUserService {
         }
         return ServerResponse.createByErrorMessage("Update personal information failed.");
     }
+
+    public ServerResponse<User> getInformation(Integer userId){
+        User user = userMapper.selectByPrimaryKey(userId);
+        if(user == null){
+            return ServerResponse.createByErrorMessage("Cannot find current user.");
+        }
+        user.setPassword(org.apache.commons.lang3.StringUtils.EMPTY);
+        return ServerResponse.createBySuccess(user);
+    }
 }
