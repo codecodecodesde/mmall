@@ -1,9 +1,11 @@
 package com.mmall.service.impl;
 
+import com.mmall.common.Const;
 import com.mmall.common.ServerResponse;
 import com.mmall.dao.UserMapper;
 import com.mmall.pojo.User;
 import com.mmall.service.IUserService;
+import com.mmall.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,13 +26,56 @@ public class UserServiceImpl implements IUserService {
         }
 
         //todo 密码登录MD5
-
-        User user = userMapper.selectLogin(username, password);
+        String md5Password = MD5Util.MD5EncodeUtf8(password);
+        User user = userMapper.selectLogin(username, md5Password);
         if(user == null){
             return ServerResponse.createByErrorMessage("Wrong password.");
         }
 
         user.setPassword(org.apache.commons.lang3.StringUtils.EMPTY);
         return ServerResponse.createBySuccess("Login success!",user);
+    }
+
+    public ServerResponse<String> register(User user){
+        ServerResponse validResponse = this.checkValid(user.getUsername(), Const.USERNAME);
+        if(!validResponse.isSuccess()){
+            return validResponse;
+        }
+        validResponse = this.checkValid(user.getEmail(), Const.EMAIL);
+        if(!validResponse.isSuccess()){
+            return validResponse;
+        }
+
+        user.setRole(Const.Role.ROLE_CUSTOMER);
+        //MD5
+        user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
+        int resultCount = userMapper.insert(user);
+        if(resultCount == 0){
+            return ServerResponse.createByErrorMessage("Register fails");
+        }
+        return ServerResponse.createBySuccessMessage("Register successes!");
+    }
+
+    public ServerResponse<String> checkValid(String str, String type){
+        if(org.apache.commons.lang3.StringUtils.isNoneBlank(type)){
+            //开始校验
+            if(Const.USERNAME.equals(type)){
+                int resultCount = userMapper.checkUsername(str);
+                if(resultCount > 0){
+                    return ServerResponse.createByErrorMessage("Username has exist.");
+                }
+            }
+
+            if(Const.EMAIL.equals(type)){
+                int resultCount = userMapper.checkEmail(str);
+                if(resultCount > 0){
+                    return ServerResponse.createByErrorMessage("Email has exist.");
+                }
+            }
+        }else{
+            return ServerResponse.createByErrorMessage("Wrong parameter.");
+        }
+
+        return ServerResponse.createBySuccessMessage("Verify successes");
     }
 }
