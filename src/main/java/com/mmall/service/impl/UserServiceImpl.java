@@ -66,14 +66,14 @@ public class UserServiceImpl implements IUserService {
             if(Const.USERNAME.equals(type)){
                 int resultCount = userMapper.checkUsername(str);
                 if(resultCount > 0){
-                    return ServerResponse.createByErrorMessage("Username has exist.");
+                    return ServerResponse.createByErrorMessage("Username already exists.");
                 }
             }
 
             if(Const.EMAIL.equals(type)){
                 int resultCount = userMapper.checkEmail(str);
                 if(resultCount > 0){
-                    return ServerResponse.createByErrorMessage("Email has exist.");
+                    return ServerResponse.createByErrorMessage("Email already exists.");
                 }
             }
         }else{
