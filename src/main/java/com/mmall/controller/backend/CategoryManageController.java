@@ -43,7 +43,7 @@ public class CategoryManageController {
         return ServerResponse.createByErrorMessage("Requires administrator privileges");
     }
 
-    @RequestMapping("ser_category_name.do")
+    @RequestMapping("set_category_name.do")
     @ResponseBody
     public ServerResponse setCategoryName(HttpSession session, Integer categoryId, String categoryName){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
@@ -53,6 +53,34 @@ public class CategoryManageController {
         if(iUserService.checkAdminRole(user).isSuccess()){
             //update category name
             return iCategoryService.updateCategoryName(categoryId, categoryName);
+        }
+        return ServerResponse.createByErrorMessage("Requires administrator privileges");
+    }
+
+    @RequestMapping("get_category.do")
+    @ResponseBody
+    public ServerResponse getChildrenParallelCategory(HttpSession session, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "User is not logged in. Please log in");
+        }
+        if(iUserService.checkAdminRole(user).isSuccess()){
+            //search for category children node information
+            return iCategoryService.getChildrenParallelCategory(categoryId);
+        }
+        return ServerResponse.createByErrorMessage("Requires administrator privileges");
+    }
+
+    @RequestMapping("get_deep_category.do")
+    @ResponseBody
+    public ServerResponse getCategoryAndDeepChildrenCategory(HttpSession session, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "User is not logged in. Please log in");
+        }
+        if(iUserService.checkAdminRole(user).isSuccess()){
+            //search for current node id and find its children node id recursively
+            return iCategoryService.selectCategoryAndChildrenById(categoryId);
         }
         return ServerResponse.createByErrorMessage("Requires administrator privileges");
     }
